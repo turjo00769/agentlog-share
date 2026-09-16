@@ -227,6 +227,181 @@ mark {
   border-radius: 3px;
 }
 .hidden { display: none !important; }
+
+.hamburger-btn {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 30;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--fg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 39;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.drawer-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: 85vw;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  z-index: 40;
+  transform: translateX(-100%);
+  transition: transform 0.22s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem;
+  overflow-y: auto;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.drawer-head h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+.drawer-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.profile-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.profile-bar .who { color: var(--fg); font-weight: 600; }
+.profile-bar button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0;
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+.modal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 360px;
+  width: 100%;
+}
+.modal h2 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+.modal p { color: var(--muted); font-size: 0.85rem; margin: 0 0 1rem; }
+.modal input[type=text] {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--fg);
+  font-size: 0.9rem;
+  margin-bottom: 0.85rem;
+}
+
+.history-panel {
+  margin-bottom: 1.25rem;
+}
+.history-panel h3 {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+}
+.history-item .h-main {
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+.history-item .h-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.history-item .h-meta {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.history-item .h-del {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.4rem;
+  flex-shrink: 0;
+}
+.history-item .h-del:hover { color: #ef4444; }
+.history-empty {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
 footer.note {
   margin-top: 2.5rem;
   padding-top: 1rem;
@@ -237,6 +412,23 @@ footer.note {
 </style>
 </head>
 <body>
+<button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Open history menu">☰</button>
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2>Your sessions</h2>
+    <button class="drawer-close" id="drawerCloseBtn" type="button" aria-label="Close">✕</button>
+  </div>
+  <div class="profile-bar">
+    <span>Signed in as <span class="who" id="profileName">—</span></span>
+    <button id="switchProfileBtn" type="button">switch</button>
+  </div>
+  <div class="history-panel" id="historyPanel">
+    <h3>Recent</h3>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</aside>
+
 <div class="wrap">
   <header>
     <h1>🪵 AgentLog Share</h1>
@@ -252,6 +444,15 @@ footer.note {
   </div>
   <div id="status"></div>
 
+  <div id="profileModal" class="modal-overlay hidden">
+    <div class="modal">
+      <h2>Welcome to AgentLog Share</h2>
+      <p>Give yourself a name. This just labels your local history on this device — it isn't an account and nothing is sent anywhere.</p>
+      <input type="text" id="profileInput" placeholder="Your name" maxlength="40">
+      <button class="btn" id="profileSaveBtn" type="button" style="width:100%">Continue</button>
+    </div>
+  </div>
+
   <div id="app" class="hidden">
     <div class="toolbar">
       <div class="session-picker" id="sessionPicker"></div>
@@ -264,7 +465,7 @@ footer.note {
   </div>
 
   <footer class="note">
-    Parsing happens locally in your browser — files are never sent to a server. Values that look like API keys, tokens, or passwords are automatically masked before display.
+    Parsing happens locally in your browser — files are never sent to a server. Values that look like API keys, tokens, or passwords are automatically masked before display. Your profile name and session history are stored only in this browser (IndexedDB/localStorage), tied to this device — clearing your browser data clears them too, and nothing is ever synced to us or anyone else.
   </footer>
 </div>
 
@@ -281,9 +482,175 @@ footer.note {
   const searchInput = document.getElementById('searchInput');
   const exportBtn = document.getElementById('exportBtn');
   const resetBtn = document.getElementById('resetBtn');
+  const profileNameEl = document.getElementById('profileName');
+  const switchProfileBtn = document.getElementById('switchProfileBtn');
+  const profileModal = document.getElementById('profileModal');
+  const profileInput = document.getElementById('profileInput');
+  const profileSaveBtn = document.getElementById('profileSaveBtn');
+  const historyPanel = document.getElementById('historyPanel');
+  const historyList = document.getElementById('historyList');
 
   let sessions = []; // {name, messages: [{role, ts, html, rawText}]}
   let activeIndex = 0;
+
+  // ---------- Local profile (name only, no real auth — just labels local storage) ----------
+  const PROFILE_KEY = 'agentlog_profile_name';
+
+  function getProfile() {
+    return localStorage.getItem(PROFILE_KEY);
+  }
+  function setProfile(name) {
+    localStorage.setItem(PROFILE_KEY, name);
+    profileNameEl.textContent = name;
+  }
+  function promptForProfile() {
+    profileInput.value = getProfile() || '';
+    profileModal.classList.remove('hidden');
+    profileInput.focus();
+  }
+  profileSaveBtn.addEventListener('click', () => {
+    const name = (profileInput.value || '').trim() || 'You';
+    setProfile(name);
+    profileModal.classList.add('hidden');
+    refreshHistoryList();
+  });
+  profileInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') profileSaveBtn.click();
+  });
+  switchProfileBtn.addEventListener('click', promptForProfile);
+
+  // ---------- Local history (IndexedDB, per-browser only, never sent anywhere) ----------
+  const DB_NAME = 'agentlog_share';
+  const STORE = 'sessions';
+  let dbPromise = null;
+
+  function openDb() {
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(STORE)) {
+          const store = db.createObjectStore(STORE, { keyPath: 'id' });
+          store.createIndex('profile', 'profile', { unique: false });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return dbPromise;
+  }
+
+  async function saveToHistory(fileName, sessionsData) {
+    try {
+      const db = await openDb();
+      const profile = getProfile() || 'You';
+      const record = {
+        id: `${profile}::${Date.now()}::${Math.random().toString(36).slice(2, 8)}`,
+        profile,
+        fileName,
+        uploadedAt: new Date().toISOString(),
+        sessionCount: sessionsData.length,
+        messageCount: sessionsData.reduce((n, s) => n + s.messages.length, 0),
+        sessions: sessionsData,
+      };
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).put(record);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+      refreshHistoryList();
+    } catch (e) {
+      console.warn('Could not save to local history:', e);
+    }
+  }
+
+  async function listHistory() {
+    try {
+      const db = await openDb();
+      const profile = getProfile() || 'You';
+      return await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readonly');
+        const idx = tx.objectStore(STORE).index('profile');
+        const req = idx.getAll(IDBKeyRange.only(profile));
+        req.onsuccess = () => resolve((req.result || []).sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt)));
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {
+      return [];
+    }
+  }
+
+  async function deleteFromHistory(id) {
+    try {
+      const db = await openDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        tx.objectStore(STORE).delete(id);
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+      refreshHistoryList();
+    } catch (e) {
+      console.warn('Could not delete history entry:', e);
+    }
+  }
+
+  async function refreshHistoryList() {
+    const items = await listHistory();
+    historyList.innerHTML = '';
+    if (items.length === 0) {
+      historyList.innerHTML = '<div class="history-empty">No sessions yet — files you open will show up here.</div>';
+      return;
+    }
+    for (const item of items) {
+      const row = document.createElement('div');
+      row.className = 'history-item';
+      const when = new Date(item.uploadedAt).toLocaleString();
+      row.innerHTML = `
+        <div class="h-main">
+          <div class="h-name">${esc(item.fileName)}</div>
+          <div class="h-meta">${item.sessionCount} session${item.sessionCount > 1 ? 's' : ''} · ${item.messageCount} messages · ${esc(when)}</div>
+        </div>
+        <button class="h-del" title="Remove from history">✕</button>`;
+      row.querySelector('.h-main').addEventListener('click', () => openFromHistory(item));
+      row.querySelector('.h-del').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteFromHistory(item.id);
+      });
+      historyList.appendChild(row);
+    }
+  }
+
+  function openFromHistory(item) {
+    sessions = item.sessions;
+    activeIndex = 0;
+    statusEl.textContent = '';
+    buildPicker();
+    renderSession();
+    app.classList.remove('hidden');
+    dropzone.classList.add('hidden');
+    closeDrawer();
+  }
+
+  // ---------- Drawer open/close ----------
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const drawer = document.getElementById('drawer');
+  const drawerOverlay = document.getElementById('drawerOverlay');
+  const drawerCloseBtn = document.getElementById('drawerCloseBtn');
+
+  function openDrawer() {
+    drawer.classList.add('open');
+    drawerOverlay.classList.add('open');
+  }
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    drawerOverlay.classList.remove('open');
+  }
+  hamburgerBtn.addEventListener('click', openDrawer);
+  drawerCloseBtn.addEventListener('click', closeDrawer);
+  drawerOverlay.addEventListener('click', closeDrawer);
 
   const SECRET_PATTERNS = [
     /((?:api[_-]?key|secret|token|password|passwd)["']?\s*[:=]\s*["']?)([A-Za-z0-9\-_.]{8,})/gi,
@@ -434,6 +801,7 @@ footer.note {
       renderSession();
       app.classList.remove('hidden');
       dropzone.classList.add('hidden');
+      saveToHistory(file.name, sessions);
     } catch (err) {
       statusEl.className = 'error';
       statusEl.textContent = 'Error: ' + err.message;
@@ -527,6 +895,17 @@ footer.note {
     statusEl.textContent = '';
     fileInput.value = '';
   });
+
+  // ---------- Init ----------
+  (function init() {
+    const existing = getProfile();
+    if (existing) {
+      profileNameEl.textContent = existing;
+      refreshHistoryList();
+    } else {
+      promptForProfile();
+    }
+  })();
 })();
 </script>
 </body>

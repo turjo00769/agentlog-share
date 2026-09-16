@@ -12,6 +12,10 @@ Session transcripts are usually raw JSON lines — hard to read, hard to share. 
 
 **Everything runs in your browser.** No server, no backend, no upload. Your session data — which may include code and credentials — never leaves your machine. The app also automatically masks anything that looks like an API key, token, or password before displaying it.
 
+## Profile & history
+
+There's a lightweight "profile" (just a name you pick) and a history list of sessions you've opened before. This is **not an account system** — there's no server, no password, no real authentication. It's just a label used to organize what's saved in your browser's local storage (IndexedDB) on this specific device. Clearing your browser data clears it. Nothing syncs across devices or gets sent anywhere.
+
 ## Usage
 
 1. Open the live site (or `index.html` locally in any browser).
