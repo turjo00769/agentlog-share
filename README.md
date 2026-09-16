@@ -37,3 +37,7 @@ This repo is ready to deploy as-is on Vercel, Netlify, or Cloudflare Pages — j
 ## License
 
 MIT
+
+## Legal
+
+See [Privacy Policy](privacy.html) and [Terms of Service](terms.html) — both linked in the app's footer too.

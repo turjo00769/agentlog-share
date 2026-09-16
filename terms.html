@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service — AgentLog Share</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%AA%B5%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #ffffff;
+  --panel: #f9fafb;
+  --fg: #17171a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #7c5cff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f0f12; --panel: #17171c; --fg: #e7e7ea; --muted: #9aa0ab; --border: #2a2a31; --accent: #a78bfa;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f0f12; --panel: #17171c; --fg: #e7e7ea; --muted: #9aa0ab; --border: #2a2a31; --accent: #a78bfa;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.65;
+}
+.wrap { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 6rem; }
+a { color: var(--accent); }
+.back { display: inline-block; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--muted); text-decoration: none; }
+.back:hover { color: var(--accent); }
+h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+.updated { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
+h2 { font-size: 1.1rem; margin-top: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+p, li { color: var(--fg); }
+ul { padding-left: 1.3rem; }
+li { margin-bottom: 0.5rem; }
+.callout {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin: 1.25rem 0;
+  font-size: 0.92rem;
+}
+.callout strong { color: var(--accent); }
+code { background: var(--panel); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.9em; }
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Back to AgentLog Share</a>
+  <h1>Terms of Service</h1>
+  <p class="updated">Last updated: September 2026</p>
+
+  <p>By using AgentLog Share ("the app", "this site"), you agree to the following terms. If you don't agree, please don't use the app.</p>
+
+  <h2>What the service is</h2>
+  <p>AgentLog Share is a free, browser-based tool that renders AI coding agent session exports (such as Claude Code transcripts) into a readable format. All processing happens locally in your browser — see the <a href="privacy.html">Privacy Policy</a> for details.</p>
+
+  <h2>"As is", no warranty</h2>
+  <p>This app is provided <strong>as is</strong>, without warranties of any kind, express or implied. We don't guarantee it will be error-free, uninterrupted, or fit for any particular purpose. It's a free tool, maintained on a best-effort basis.</p>
+
+  <h2>Your data and files</h2>
+  <ul>
+    <li>You're responsible for the content of any files you process with this app.</li>
+    <li>Because history is stored only in your browser's local storage, <strong>clearing your browser data will permanently delete it</strong> — we cannot recover it, back it up, or restore it, since we never had a copy. Keep your own backup of original session files if they matter to you.</li>
+    <li>Automatic secret-redaction is a best-effort pattern match, not a security guarantee. Don't rely on it as your sole protection for sensitive credentials.</li>
+  </ul>
+
+  <h2>Acceptable use</h2>
+  <p>Please don't use this app to:</p>
+  <ul>
+    <li>Violate any applicable law</li>
+    <li>Attempt to disrupt, reverse-engineer for malicious purposes, or attack the hosting infrastructure</li>
+    <li>Misrepresent the tool as an official Anthropic product</li>
+  </ul>
+
+  <h2>Open source</h2>
+  <p>The code for this project is open source under the MIT License. You're free to fork it, self-host it, or modify it — see the <a href="https://github.com/turjo00769/agentlog-share" target="_blank" rel="noopener">GitHub repository</a> for the license terms.</p>
+
+  <h2>Limitation of liability</h2>
+  <p>To the fullest extent permitted by law, we are not liable for any loss of data, loss of profits, or any indirect or consequential damages arising from your use of this app.</p>
+
+  <h2>Changes to these terms</h2>
+  <p>These terms may be updated from time to time. Continued use of the app after changes are posted means you accept the updated terms.</p>
+
+  <h2>Contact</h2>
+  <p>Questions can be raised via the project's <a href="https://github.com/turjo00769/agentlog-share/issues" target="_blank" rel="noopener">GitHub issues page</a>.</p>
+
+  <footer>AgentLog Share is an independent, open-source project and is not affiliated with or endorsed by Anthropic.</footer>
+</div>
+</body>
+</html>
