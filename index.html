@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentLog Share</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%AA%B5%3C/text%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --panel: #f9fafb;
+  --fg: #17171a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --code-bg: #f4f4f5;
+  --accent: #7c5cff;
+  --accent-fg: #ffffff;
+  --user-bg: #eef1ff;
+  --claude-bg: #f6f4ff;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --success-bg: #f0fdf4;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f0f12;
+    --panel: #17171c;
+    --fg: #e7e7ea;
+    --muted: #9aa0ab;
+    --border: #2a2a31;
+    --code-bg: #1b1b21;
+    --accent: #a78bfa;
+    --accent-fg: #16121f;
+    --user-bg: #1a2036;
+    --claude-bg: #201c33;
+    --error-bg: #2a1518;
+    --error-border: #5b2329;
+    --success-bg: #12241a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f0f12;
+  --panel: #17171c;
+  --fg: #e7e7ea;
+  --muted: #9aa0ab;
+  --border: #2a2a31;
+  --code-bg: #1b1b21;
+  --accent: #a78bfa;
+  --accent-fg: #16121f;
+  --user-bg: #1a2036;
+  --claude-bg: #201c33;
+  --error-bg: #2a1518;
+  --error-border: #5b2329;
+  --success-bg: #12241a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.75rem 1.1rem 5rem;
+}
+header h1 {
+  font-size: 1.35rem;
+  margin: 0 0 0.35rem;
+}
+header p.sub {
+  color: var(--muted);
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+}
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  padding: 2.5rem 1.25rem;
+  text-align: center;
+  background: var(--panel);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.dropzone.dragover {
+  border-color: var(--accent);
+  background: var(--claude-bg);
+}
+.dropzone .big {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+.dropzone .hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 0.35rem;
+}
+input[type=file] { display: none; }
+.btn {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-fg);
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.75rem;
+}
+.btn.secondary {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  font-weight: 500;
+}
+#status {
+  margin-top: 1rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+#status.error { color: #ef4444; }
+
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 1.25rem 0 0.5rem;
+}
+.session-picker {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.session-chip {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--fg);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.session-chip.active {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+.searchbox {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+.searchbox input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.85rem;
+}
+.meta-bar {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-bottom: 1rem;
+}
+
+.msg {
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin: 0.65rem 0;
+  border: 1px solid var(--border);
+  overflow-wrap: break-word;
+}
+.msg.user { background: var(--user-bg); }
+.msg.claude { background: var(--claude-bg); }
+.msg-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+.msg-who { font-weight: 700; color: var(--fg); font-size: 0.85rem; }
+.msg-body p:first-child { margin-top: 0; }
+.msg-body p:last-child { margin-bottom: 0; }
+.msg-body pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7rem;
+  overflow-x: auto;
+  max-width: 100%;
+  font-size: 0.82rem;
+}
+.msg-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+details.tool {
+  margin: 0.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+details.tool > summary {
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--code-bg);
+  list-style: none;
+}
+details.tool > summary::-webkit-details-marker { display: none; }
+details.tool[data-kind="result-error"] > summary { background: var(--error-bg); }
+details.tool .tool-body { padding: 0.1rem 0.75rem 0.75rem; }
+mark {
+  background: #ffe08a;
+  color: #1a1a1a;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+.hidden { display: none !important; }
+footer.note {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🪵 AgentLog Share</h1>
+    <p class="sub">Drop in an AI coding agent session export (a .zip of .jsonl files, or a single .jsonl — works with Claude Code and similar tools) and read the conversations as a clean, searchable timeline — entirely in your browser. Nothing is uploaded anywhere.</p>
+  </header>
+
+  <div id="dropzone" class="dropzone">
+    <div class="big">📂</div>
+    <div><strong>Drop a .zip or .jsonl file here</strong>, or</div>
+    <button class="btn" id="pickBtn" type="button">Choose file</button>
+    <div class="hint">Works with session exports from <code>~/.claude/projects/&lt;project&gt;/</code> and similar agent tools</div>
+    <input type="file" id="fileInput" accept=".zip,.jsonl,application/zip,application/json">
+  </div>
+  <div id="status"></div>
+
+  <div id="app" class="hidden">
+    <div class="toolbar">
+      <div class="session-picker" id="sessionPicker"></div>
+      <div class="searchbox"><input type="text" id="searchInput" placeholder="Search this conversation…"></div>
+      <button class="btn secondary" id="exportBtn" type="button">Export as HTML</button>
+      <button class="btn secondary" id="resetBtn" type="button">Load another file</button>
+    </div>
+    <div class="meta-bar" id="metaBar"></div>
+    <div id="thread"></div>
+  </div>
+
+  <footer class="note">
+    Parsing happens locally in your browser — files are never sent to a server. Values that look like API keys, tokens, or passwords are automatically masked before display.
+  </footer>
+</div>
+
+<script>
+(function() {
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const pickBtn = document.getElementById('pickBtn');
+  const statusEl = document.getElementById('status');
+  const app = document.getElementById('app');
+  const sessionPicker = document.getElementById('sessionPicker');
+  const thread = document.getElementById('thread');
+  const metaBar = document.getElementById('metaBar');
+  const searchInput = document.getElementById('searchInput');
+  const exportBtn = document.getElementById('exportBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  let sessions = []; // {name, messages: [{role, ts, html, rawText}]}
+  let activeIndex = 0;
+
+  const SECRET_PATTERNS = [
+    /((?:api[_-]?key|secret|token|password|passwd)["']?\s*[:=]\s*["']?)([A-Za-z0-9\-_.]{8,})/gi,
+    /sk-[A-Za-z0-9]{20,}/g,
+    /eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}/g,
+  ];
+
+  function scrub(text) {
+    if (typeof text !== 'string') return text;
+    let out = text;
+    out = out.replace(SECRET_PATTERNS[0], (m, p1, p2) => p1 + p2.slice(0, 4) + '...[REDACTED]');
+    out = out.replace(SECRET_PATTERNS[1], m => m.slice(0, 8) + '...[REDACTED]');
+    out = out.replace(SECRET_PATTERNS[2], m => m.slice(0, 10) + '...[REDACTED]');
+    return out;
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function truncate(s, n) {
+    if (s.length > n) return s.slice(0, n) + '\n... [truncated]';
+    return s;
+  }
+
+  function mdLiteToHtml(text) {
+    // Minimal, safe rendering: escape, then linkify + paragraphs + inline code.
+    const escaped = esc(text);
+    const withCode = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
+    const withLinks = withCode.replace(/(https?:\/\/[^\s<)]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    return withLinks.split(/\n{2,}/).map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
+  }
+
+  function renderBlock(block) {
+    if (typeof block === 'string') {
+      return { html: mdLiteToHtml(scrub(block)), text: block };
+    }
+    const t = block.type;
+    if (t === 'text') {
+      const txt = scrub(block.text || '');
+      return { html: mdLiteToHtml(txt), text: txt };
+    }
+    if (t === 'thinking') {
+      return null; // skip internal reasoning
+    }
+    if (t === 'tool_use') {
+      const name = block.name || 'tool';
+      let inp;
+      try { inp = JSON.stringify(block.input || {}, null, 2); } catch (e) { inp = String(block.input); }
+      inp = truncate(scrub(inp), 1500);
+      const html = `<details class="tool" data-kind="call"><summary>🔧 Tool call: ${esc(name)}</summary><div class="tool-body"><pre><code>${esc(inp)}</code></pre></div></details>`;
+      return { html, text: `[tool call: ${name}] ${inp}` };
+    }
+    if (t === 'tool_result') {
+      let content = block.content;
+      if (Array.isArray(content)) {
+        content = content.map(c => (c && typeof c === 'object') ? (c.text || '') : String(c)).join('\n');
+      }
+      content = truncate(scrub(String(content || '')), 1500);
+      const isError = !!block.is_error;
+      const label = isError ? '❌ Tool result (error)' : '✅ Tool result';
+      const html = `<details class="tool" data-kind="${isError ? 'result-error' : 'result'}"><summary>${label}</summary><div class="tool-body"><pre><code>${esc(content)}</code></pre></div></details>`;
+      return { html, text: `[${label}] ${content}` };
+    }
+    if (t === 'image') {
+      return { html: '<p><em>[image attached]</em></p>', text: '[image attached]' };
+    }
+    return null;
+  }
+
+  function parseJsonl(text, fallbackName) {
+    const lines = text.split('\n');
+    const messages = [];
+    let sessionId = null;
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line) continue;
+      let d;
+      try { d = JSON.parse(line); } catch (e) { continue; }
+      if (d.type !== 'user' && d.type !== 'assistant') continue;
+      sessionId = d.sessionId || sessionId;
+      const msg = d.message || {};
+      const role = msg.role || d.type;
+      const content = msg.content;
+      const ts = d.timestamp || '';
+      let htmlParts = [];
+      let textParts = [];
+      if (typeof content === 'string') {
+        const r = renderBlock(content);
+        if (r) { htmlParts.push(r.html); textParts.push(r.text); }
+      } else if (Array.isArray(content)) {
+        for (const b of content) {
+          const r = renderBlock(b);
+          if (r) { htmlParts.push(r.html); textParts.push(r.text); }
+        }
+      }
+      const html = htmlParts.join('');
+      const text_ = textParts.join(' ');
+      if (html.trim()) {
+        messages.push({ role, ts, html, text: text_ });
+      }
+    }
+    return { name: sessionId || fallbackName, messages };
+  }
+
+  async function handleFile(file) {
+    statusEl.className = '';
+    statusEl.textContent = `Reading ${file.name}…`;
+    sessions = [];
+    try {
+      const lower = file.name.toLowerCase();
+      if (lower.endsWith('.zip')) {
+        const zip = await JSZip.loadAsync(file);
+        const entries = Object.values(zip.files).filter(f => !f.dir && f.name.toLowerCase().endsWith('.jsonl'));
+        if (entries.length === 0) {
+          throw new Error('No .jsonl session files found inside this zip.');
+        }
+        for (const entry of entries) {
+          const text = await entry.async('string');
+          const short = entry.name.split('/').pop();
+          const parsed = parseJsonl(text, short);
+          if (parsed.messages.length > 0) sessions.push(parsed);
+        }
+      } else if (lower.endsWith('.jsonl') || lower.endsWith('.json') || lower.endsWith('.txt')) {
+        const text = await file.text();
+        const parsed = parseJsonl(text, file.name);
+        if (parsed.messages.length > 0) sessions.push(parsed);
+      } else {
+        throw new Error('Please choose a .zip or .jsonl file.');
+      }
+
+      if (sessions.length === 0) {
+        throw new Error('No readable conversation messages were found in this file.');
+      }
+
+      sessions.sort((a, b) => {
+        const ta = a.messages[0] && a.messages[0].ts || '';
+        const tb = b.messages[0] && b.messages[0].ts || '';
+        return ta < tb ? -1 : ta > tb ? 1 : 0;
+      });
+
+      activeIndex = 0;
+      statusEl.textContent = `Loaded ${sessions.length} session${sessions.length > 1 ? 's' : ''}.`;
+      buildPicker();
+      renderSession();
+      app.classList.remove('hidden');
+      dropzone.classList.add('hidden');
+    } catch (err) {
+      statusEl.className = 'error';
+      statusEl.textContent = 'Error: ' + err.message;
+    }
+  }
+
+  function buildPicker() {
+    sessionPicker.innerHTML = '';
+    if (sessions.length <= 1) return;
+    sessions.forEach((s, i) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'session-chip' + (i === activeIndex ? ' active' : '');
+      const first = s.messages[0];
+      const label = (first && first.ts) ? first.ts.slice(0, 16).replace('T', ' ') : s.name.slice(0, 8);
+      chip.textContent = `Session ${i + 1} · ${label}`;
+      chip.title = s.name;
+      chip.addEventListener('click', () => { activeIndex = i; buildPicker(); renderSession(); });
+      sessionPicker.appendChild(chip);
+    });
+  }
+
+  function renderSession() {
+    const s = sessions[activeIndex];
+    metaBar.textContent = `${s.messages.length} messages · session ${s.name}`;
+    thread.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    for (const m of s.messages) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + (m.role === 'user' ? 'user' : 'claude');
+      const who = m.role === 'user' ? '🧑 User' : '🤖 Claude';
+      div.innerHTML = `<div class="msg-head"><span class="msg-who">${who}</span><span>${esc(m.ts)}</span></div><div class="msg-body">${m.html}</div>`;
+      div._searchText = (m.text || '').toLowerCase();
+      frag.appendChild(div);
+    }
+    thread.appendChild(frag);
+    searchInput.value = '';
+    applySearch();
+  }
+
+  function applySearch() {
+    const q = searchInput.value.trim().toLowerCase();
+    const nodes = thread.querySelectorAll('.msg');
+    nodes.forEach(n => {
+      if (!q || n._searchText.includes(q)) {
+        n.classList.remove('hidden');
+      } else {
+        n.classList.add('hidden');
+      }
+    });
+  }
+
+  function exportCurrentAsHtml() {
+    const s = sessions[activeIndex];
+    const bodyHtml = thread.innerHTML;
+    const page = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Session ${esc(s.name)}</title>` +
+      `<style>${document.querySelector('style').textContent}</style></head><body><div class="wrap">` +
+      `<h1>🧾 ${esc(s.name)}</h1><div id="thread">${bodyHtml}</div></div></body></html>`;
+    const blob = new Blob([page], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `agentlog-session-${s.name.slice(0, 8)}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // Wiring
+  pickBtn.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('click', (e) => { if (e.target === pickBtn) return; fileInput.click(); });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files && fileInput.files[0]) handleFile(fileInput.files[0]);
+  });
+  ['dragenter', 'dragover'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('dragover'); })
+  );
+  ['dragleave', 'drop'].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('dragover'); })
+  );
+  dropzone.addEventListener('drop', e => {
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  searchInput.addEventListener('input', applySearch);
+  exportBtn.addEventListener('click', exportCurrentAsHtml);
+  resetBtn.addEventListener('click', () => {
+    app.classList.add('hidden');
+    dropzone.classList.remove('hidden');
+    statusEl.textContent = '';
+    fileInput.value = '';
+  });
+})();
+</script>
+</body>
+</html>
